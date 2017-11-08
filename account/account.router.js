@@ -10,5 +10,6 @@ router.post('/account/login', accountValidator.loginRules, accountValidator.vali
 router.get('/account/isEmailRegistered', accountController.isEmailRegistered);
 router.get('/account/profile', authGuard, accountController.getProfile);
 router.post('/account/profile', authGuard, accountValidator.updateProfileRules, accountValidator.validate, accountController.updateProfile);
+router.post('/account/updatePassword', authGuard, accountValidator.updatePasswordRules, accountValidator.validate, accountController.updatePassword);
 
 module.exports = router;

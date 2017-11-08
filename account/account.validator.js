@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const { check, validationResult } = require('express-validator/check');
 const User = require('./user');
 
@@ -49,13 +50,28 @@ module.exports = {
       .isEmail()
       .withMessage('Must be an email')
       .custom((email, { req }) => {
-        return User.findOne({ email: email, _id: { $ne:  req.user._id} })
+        return User.findOne({ email: email, _id: { $ne: req.user._id } })
           .then(user => {
             return user
               ? Promise.reject('This email already exists.')
               : Promise.resolve(true);
           });
       })
+  ],
+  updatePasswordRules: [
+    check('oldPassword')
+      .isLength({ min: 1 })
+      .withMessage('Can not be empty')
+      .custom(async (oldPassword, { req }) => {
+        const isValidPassword = await bcrypt.compare(oldPassword, req.user.password);
+        return isValidPassword
+          ? Promise.resolve(true)
+          : Promise.reject('Invalid old password');
+      }),
+    
+    check('newPassword', 'passwords must be at least 8 chars long and contain one number')
+      .isLength({ min: 8 })
+      .matches(/\d/)
   ],
   validate: (req, res, next) => {
     const errors = validationResult(req);

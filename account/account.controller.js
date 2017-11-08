@@ -22,7 +22,6 @@ async function signUp(req, res) {
     password: passwordHash
   });
   
-  console.log(user);
   res.json(user);
 }
 
@@ -74,6 +73,11 @@ async function updateProfile(req, res) {
   res.json({ message: 'The user profile was updated.' });
 }
 
-function updatePassword() {
-
+async function updatePassword(req, res) {
+  const passwordHash = await bcrypt.hash(req.body.newPassword, salts);
+  await User.update({ _id: req.user._id }, {
+    password: passwordHash
+  });
+  
+  res.json({ message: 'The password was updated.'});
 }
