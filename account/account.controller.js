@@ -1,12 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const randomstring = require('randomstring');
 const User = require('./user');
 const { bcrypt: { salts } } = require('../config/account');
-const { jwt: { secretOrKey } } = require('../config/auth');
+const { jwt: { secretOrKey, expiresIn }, tokens: { refresh: { length: refreshTokenLength } } } = require('../config/auth');
 
 module.exports = {
   signUp,
   login,
+  refreshAuthToken,
   isEmailRegistered,
   getProfile,
   updateProfile,
@@ -16,9 +18,11 @@ module.exports = {
 async function signUp(req, res) {
   const userData = req.body;
   const passwordHash = await bcrypt.hash(userData.password, salts);
+  const refreshToken = randomstring.generate(refreshTokenLength);
   
   const user = await User.create({
     ...userData,
+    refreshToken,
     password: passwordHash
   });
   
@@ -41,9 +45,26 @@ async function login(req, res) {
     return;
   }
   
-  const jwtToken = jwt.sign({ sub: user._id }, secretOrKey);
-  res.set('Authorization', jwtToken);
+  const jwtToken = jwt.sign({ sub: user._id }, secretOrKey, { expiresIn });
+  
+  res.set('AccessToken', jwtToken);
+  res.set('RefreshToken', user.refreshToken);
   res.json(user);
+}
+
+async function refreshAuthToken(req, res) {
+  const refreshToken = req.headers['refresh-token'];
+  const user = await User.findOne({ refreshToken });
+  
+  if (!user) {
+    res.status(401).json({ message: 'Invalid refresh token.' });
+    return;
+  }
+  
+  const jwtToken = jwt.sign({ sub: user._id }, secretOrKey, { expiresIn });
+  
+  res.set('AccessToken', jwtToken);
+  res.json();
 }
 
 async function isEmailRegistered(req, res) {

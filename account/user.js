@@ -8,11 +8,15 @@ const userSchema = new Schema({
     type: String,
     unique: true
   },
-  password: String
+  password: String,
+  refreshToken: {
+    type: String,
+    unique: true
+  }
 }, {
   toJSON: {
     transform: function (doc, user) {
-      const { password, __v, ...userDetails } = user;
+      const { password, __v, refreshToken, ...userDetails } = user;
       return userDetails;
     }
   }
