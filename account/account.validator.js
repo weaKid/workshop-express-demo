@@ -37,6 +37,11 @@ module.exports = {
       .isLength({ min: 1 })
       .withMessage('Can not be empty')
   ],
+  sendPasswordResetEmailRules: [
+    check('email')
+      .isEmail()
+      .withMessage('Must be an email'),
+  ],
   updateProfileRules: [
     check('firstName')
       .isLength({ min: 1 })

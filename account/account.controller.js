@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
+const path = require('path');
 const jwt = require('jsonwebtoken');
 const randomstring = require('randomstring');
+const Email = require('../email');
 const User = require('./user');
 const { bcrypt: { salts } } = require('../config/account');
 const { jwt: { secretOrKey, expiresIn }, tokens: { refresh: { length: refreshTokenLength } } } = require('../config/auth');
@@ -8,6 +10,7 @@ const { jwt: { secretOrKey, expiresIn }, tokens: { refresh: { length: refreshTok
 module.exports = {
   signUp,
   login,
+  sendPasswordResetEmail,
   refreshAuthToken,
   isEmailRegistered,
   getProfile,
@@ -50,6 +53,21 @@ async function login(req, res) {
   res.set('AccessToken', jwtToken);
   res.set('RefreshToken', user.refreshToken);
   res.json(user);
+}
+
+async function sendPasswordResetEmail(req, res) {
+  await Email.send({
+    to: 'john@doe.com',
+    subject: 'Please reset your password',
+    template: path.resolve(__dirname, 'password-reset-email.hbs'),
+    context: {
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@doe.com'
+    }
+  });
+  
+  res.json();
 }
 
 async function refreshAuthToken(req, res) {
