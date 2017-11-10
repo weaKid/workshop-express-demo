@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./user');
 const { bcrypt: { salts } } = require('../config/account');
-const { secretOrKey } = require('../config/auth');
+const { jwt: { secretOrKey } } = require('../config/auth');
 
 module.exports = {
   signUp,
@@ -62,7 +62,7 @@ function getProfile(req, res) {
 async function updateProfile(req, res) {
   const { firstName, lastName, email } = req.body;
   
-  await User.update({ _id: req.user._id }, {
+  const user = await User.findByIdAndUpdate(req.user._id, {
     $set: {
       firstName,
       lastName,
@@ -70,7 +70,7 @@ async function updateProfile(req, res) {
     }
   });
   
-  res.json({ message: 'The user profile was updated.' });
+  res.json(user);
 }
 
 async function updatePassword(req, res) {
@@ -79,5 +79,5 @@ async function updatePassword(req, res) {
     password: passwordHash
   });
   
-  res.json({ message: 'The password was updated.'});
+  res.json({ message: 'The password was updated.' });
 }

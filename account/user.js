@@ -9,6 +9,13 @@ const userSchema = new Schema({
     unique: true
   },
   password: String
+}, {
+  toJSON: {
+    transform: function (doc, user) {
+      const { password, __v, ...userDetails } = user;
+      return userDetails;
+    }
+  }
 });
 
 const userModel = mongoose.model('User', userSchema);
